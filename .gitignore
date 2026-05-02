@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Database
+*.db
+*.db-journal
+
+# Uploaded child photos (local / server)
+backend/uploads/
+
+# Env
+backend/.env
+.env
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Legacy node
+node_modules/
+.netlify/
+legacy/node_modules/
+legacy/.netlify/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Accidental deploy zips
+*.zip

@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>כניסה · לוח הכוכבים</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f2eb;
+    --surface:#ffffff;
+    --surface-warm:#fffdf8;
+    --border:#e4ddd0;
+    --border-strong:#cfc4b2;
+    --accent:#ea580c;
+    --accent-hover:#c2410c;
+    --accent-muted:rgba(234,88,12,.14);
+    --text:#292524;
+    --text-muted:#78716c;
+    --muted-bg:#faf7f0;
+    --shadow:0 18px 50px -30px rgba(41,37,36,.35);
+    --shadow-sm:0 8px 24px -18px rgba(41,37,36,.28);
+    --radius-lg:1.375rem;
+    --radius-xl:1.65rem;
+  }
+  *,*::before,*::after{border-color:var(--border)}
+  html,body{height:100%}
+  body{
+    font-family:'Rubik','Segoe UI','Heebo',system-ui,sans-serif;
+    font-weight:500;
+    color:var(--text);
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(circle at 12% 20%,rgba(251,206,232,.65) 0,transparent 42%),
+      radial-gradient(circle at 88% 8%,rgba(186,230,253,.65) 0,transparent 38%),
+      radial-gradient(circle at 72% 88%,rgba(254,249,194,.85) 0,transparent 40%),
+      radial-gradient(#d6d3d15c 1.2px, transparent 1.2px);
+    background-size:auto,auto,auto,28px 28px;
+    min-height:100%;
+    letter-spacing:.01em;
+  }
+  .surface{
+    background:var(--surface);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);
+    border-radius:var(--radius-lg);
+  }
+  .surface-tight{
+    background:var(--surface-warm);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .card-hover{transition:transform .22s cubic-bezier(.2,.8,.25,1), box-shadow .22s ease, border-color .2s ease}
+  .card-hover:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--shadow);
+    border-color:#d4cbc0;
+  }
+  input,select,textarea,button{font-family:inherit}
+  .btn-pop{transition:transform .1s ease, background-color .2s ease, box-shadow .2s ease, color .2s ease}
+  .btn-pop:active{transform:scale(.97)}
+  @keyframes pop{
+    0%{transform:scale(.94);opacity:0}
+    70%{transform:scale(1.02)}
+    100%{transform:scale(1);opacity:1}
+  }
+  .pop{animation:pop .4s cubic-bezier(.24,.94,.37,1.15)}
+  details>summary{list-style:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+  details>summary::-webkit-details-marker{display:none}
+  .tap-target{min-height:52px;touch-action:manipulation}
+  .grain{position:fixed;inset:0;pointer-events:none;opacity:.04;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+</style>
+</head>
+<body class="antialiased">
+<div class="grain" aria-hidden="true"></div>
+<div id="root" class="max-w-lg sm:max-w-2xl mx-auto px-5 sm:px-6 py-8 sm:py-12 relative z-[1]"></div>
+<script>
+function getQs(name){
+  var i, p, q, parts;
+  if(typeof URLSearchParams !== 'undefined'){
+    try{
+      return new URLSearchParams(location.search).get(name);
+    }catch(e0){}
+  }
+  q = location.search.slice(1).split('&');
+  for(i = 0; i < q.length; i++){
+    parts = q[i].split('=');
+    if(parts.length && decodeURIComponent(parts[0]) === name){
+      return parts.length > 1 ? decodeURIComponent(parts[1].replace(/\+/g, ' ')) : '';
+    }
+  }
+  return null;
+}
+
+(function stashToken(){
+  var t = getQs('token');
+  if(t) sessionStorage.setItem('stars-token', t);
+})();
+
+(function(){
+  if(typeof Element==='undefined' || Element.prototype.append) return;
+  Element.prototype.append = function(){
+    var i, a;
+    for(i = 0; i < arguments.length; i++){
+      a = arguments[i];
+      if(a==null) continue;
+      this.appendChild(a.nodeType ? a : document.createTextNode(String(a)));
+    }
+  };
+})();
+
+var FAMILY_STORE = 'stars-family';
+var USER_STORE = 'stars-current-user';
+function getCurrentUserId(){ return sessionStorage.getItem(USER_STORE)||''; }
+function setCurrentUserId(id){ sessionStorage.setItem(USER_STORE, id); }
+var KEY_LEGACY = 'stars-app-v2';
+
+function cid(){ return Math.random().toString(36).slice(2,10); }
+function newFamilyId(){
+  if(typeof crypto!=='undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'fam-'+Date.now().toString(36)+'-'+cid();
+}
+
+function readFamily(){
+  try{
+    var f = JSON.parse(localStorage.getItem(FAMILY_STORE)||'null');
+    if(!f || typeof f !== 'object') return null;
+    if(!Array.isArray(f.members)) f.members = [];
+    return f;
+  }catch(e1){ return null; }
+}
+function writeFamily(f){ localStorage.setItem(FAMILY_STORE, JSON.stringify(f)); }
+
+function roleLabel(r){
+  if(r==='parent') return 'הורה';
+  if(r==='child') return 'ילד/ה';
+  return 'אחר';
+}
+
+function migrateLegacyToFamily(familyId){
+  var legacy = localStorage.getItem(KEY_LEGACY);
+  if(!legacy) return;
+  var scoped = 'stars-app-v2:'+familyId;
+  if(localStorage.getItem(scoped)) return;
+  try{
+    JSON.parse(legacy);
+    localStorage.setItem(scoped, legacy);
+  }catch(e2){}
+}
+
+var switchOnly = (function(){
+  var sw = getQs('switch');
+  return sw==='1' || sw==='user';
+})();
+
+function el(tag, props){
+  var children = Array.prototype.slice.call(arguments, 2);
+  var ki, k, ci, c, e, keys;
+  if(props==null) props = {};
+  e = document.createElement(tag);
+  keys = Object.keys(props);
+  for(ki = 0; ki < keys.length; ki++){
+    k = keys[ki];
+    if(k==='class') e.className = props[k];
+    else if(k.indexOf('on')===0) e.addEventListener(k.slice(2).toLowerCase(), props[k]);
+    else if(k==='html') e.innerHTML = props[k];
+    else e.setAttribute(k, props[k]);
+  }
+  for(ci = 0; ci < children.length; ci++){
+    c = children[ci];
+    if(c==null) continue;
+    e.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return e;
+}
+
+function goApp(){
+  var p, qs;
+  if(typeof URLSearchParams !== 'undefined'){
+    try{
+      p = new URLSearchParams(location.search);
+      p.delete('switch');
+      qs = p.toString();
+      location.href = 'index.html' + (qs ? '?'+qs : '');
+      return;
+    }catch(e3){}
+  }
+  location.href = 'index.html';
+}
+
+function render(){
+  var root = document.getElementById('root');
+  if(!root) return;
+  try{
+    root.innerHTML = '';
+
+    var wrap = el('div',{class:'space-y-8 sm:space-y-10 pop'});
+    wrap.append(el('header',{class:'mb-0'},
+      el('h1',{class:'text-4xl sm:text-5xl font-extrabold tracking-tight text-stone-900 flex items-center gap-2 sm:gap-3 leading-none flex-wrap'},
+        el('span',{class:'text-4xl sm:text-5xl leading-none select-none'}, '⭐'),
+        el('span',{class:'bg-gradient-to-l from-orange-600 to-orange-500 bg-clip-text text-transparent'}, 'לוח הכוכבים'),
+      ),
+      el('p',{class:'mt-4 text-stone-600 text-sm sm:text-base leading-relaxed max-w-xl'},
+        'רישום משפחה והגדרת משתמשים. הנתונים נשמרים במכשיר; בעתיד אפשר לקשר כאן סנכרון לשרת לפי מזהה משפחה.')
+    ));
+
+    var family = readFamily();
+
+    if(switchOnly && !family){
+      wrap.append(el('div',{class:'surface rounded-[var(--radius-xl)] p-8 sm:p-10 text-center border-[3px] border-dashed border-orange-300 bg-gradient-to-bl from-orange-50/70 to-white'},
+        el('p',{class:'text-stone-600 text-sm sm:text-base leading-relaxed mb-6'}, 'אין משפחה שמורה במכשיר.'),
+        el('a',{href:'login.html', class:'inline-flex tap-target px-6 py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold border-2 border-orange-600 shadow-md btn-pop'}, 'התחלה מחדש')));
+      root.appendChild(wrap);
+      return;
+    }
+
+    if(!family && !switchOnly){
+      var box = el('div',{class:'surface card-hover rounded-[var(--radius-xl)] p-5 sm:p-6 space-y-5 border-[3px] border-orange-100 shadow-md'});
+      box.append(el('h2',{class:'text-xl sm:text-2xl font-extrabold text-stone-900 flex items-center gap-2'},
+        el('span',{class:'text-orange-500'}, '✨'),
+        'משפחה חדשה'));
+      var nameInp = el('input',{type:'text', class:'w-full px-4 py-3.5 rounded-2xl bg-stone-50 border-2 border-stone-200 outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 text-lg text-stone-900 placeholder:text-stone-400', placeholder:'למשל: משפחת כהן'});
+      box.append(el('label',{class:'block space-y-1.5'}, el('span',{class:'text-sm font-semibold text-stone-600'}, 'שם המשפחה'), nameInp));
+      var tokInp = el('input',{type:'password', class:'w-full px-4 py-3.5 rounded-2xl bg-stone-50 border-2 border-stone-200 outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 text-stone-900 placeholder:text-stone-400', placeholder:'אם קיבלתם ממנהל האתר'});
+      box.append(el('label',{class:'block space-y-1.5'},
+        el('span',{class:'text-sm font-semibold text-stone-600'}, 'קוד סנכרון (אופציונלי)'),
+        tokInp,
+        el('span',{class:'text-xs text-stone-500 leading-relaxed'}, 'נשמר בדפדפן זה לשליחה ל־/api/state אם מוגדר בשרת.'),
+      ));
+      box.append(el('button',{class:'w-full tap-target py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold border-2 border-orange-600 shadow-md btn-pop', onClick:function(){
+        var name = (nameInp.value||'').trim();
+        if(!name){ alert('נא להזין שם משפחה'); return; }
+        var t = (tokInp.value||'').trim();
+        if(t) sessionStorage.setItem('stars-token', t);
+        var id = newFamilyId();
+        family = { id: id, name: name, members: [] };
+        writeFamily(family);
+        migrateLegacyToFamily(id);
+        render();
+      }}, 'צור משפחה והמשך'));
+
+      var idInp = el('input',{type:'text', class:'w-full px-4 py-3.5 rounded-2xl bg-stone-50 border-2 border-stone-200 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 font-mono text-sm text-stone-900', placeholder:'מזהה משפחה (UUID)'});
+      var joinBtn = el('button',{class:'w-full tap-target py-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 font-bold btn-pop text-stone-800', onClick:function(){
+        var raw = (idInp.value||'').trim();
+        if(!raw){ alert('נא להדביק מזהה'); return; }
+        family = { id: raw, name: 'משפחה', members: [] };
+        writeFamily(family);
+        render();
+      }}, 'הצטרף למשפחה');
+
+      var join = el('details',{class:'surface-tight rounded-[var(--radius-lg)] p-4 border-2 border-stone-200 mt-2'},
+        el('summary',{class:'text-sm font-bold text-orange-700 hover:text-orange-900 py-1'}, 'כבר יש מזהה משפחה? הצטרפות ממכשיר אחר'),
+        el('div',{class:'mt-4 pt-4 border-t border-stone-200 space-y-4'},
+          el('p',{class:'text-xs sm:text-sm text-stone-600 leading-relaxed'}, 'הדביקו את המזהה שקיבלתם מההורה או מייצוא ההגדרות.'),
+          el('div',{class:'space-y-3'}, idInp, joinBtn)
+        ));
+      box.append(join);
+      wrap.append(box);
+    }
+
+    if(family){
+      var panel = el('div',{class:'surface card-hover rounded-[var(--radius-xl)] p-5 sm:p-6 space-y-5 border-[3px] border-orange-100 shadow-md'});
+      panel.append(el('div',{},
+        el('h2',{class:'text-xl sm:text-2xl font-extrabold text-stone-900'}, family.name || 'משפחה'),
+        el('div',{class:'mt-3 flex flex-wrap items-center gap-2'},
+          el('code',{class:'text-xs bg-stone-100 px-3 py-2 rounded-xl border-2 border-stone-200 break-all flex-1 min-w-0 text-stone-800 font-mono'}, family.id),
+          el('button',{type:'button', class:'tap-target px-4 py-2 rounded-2xl surface-tight card-hover btn-pop text-xs font-bold text-orange-700 border border-stone-300 shrink-0', onClick:function(){
+            if(navigator.clipboard && navigator.clipboard.writeText){
+              navigator.clipboard.writeText(family.id).then(function(){ alert('הועתק'); }).catch(function(){ alert(family.id); });
+            } else {
+              alert(family.id);
+            }
+          }}, 'העתק'),
+        ),
+        el('p',{class:'text-xs text-stone-500 mt-2 leading-relaxed'}, 'שמרו מזהה זה לשיתוף עם מכשירים נוספים (עם אותו קוד סנכרון מהשרת, כשיהיה מופעל).'),
+      ));
+
+      if(!switchOnly){
+        var tokRow = el('label',{class:'block space-y-1.5'},
+          el('span',{class:'text-sm font-semibold text-stone-600'}, 'קוד סנכרון'),
+          el('input',{
+            type:'password',
+            class:'w-full px-4 py-3.5 rounded-2xl bg-stone-50 border-2 border-stone-200 outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 text-stone-900',
+            placeholder:'עדכון קוד',
+            value: sessionStorage.getItem('stars-token')||'',
+            onChange:function(e){
+              var v = e.target.value.trim();
+              if(v) sessionStorage.setItem('stars-token', v); else sessionStorage.removeItem('stars-token');
+            },
+          }));
+        panel.append(tokRow);
+      }
+
+      panel.append(el('h3',{class:'text-lg font-extrabold text-stone-900 pt-1 border-t border-stone-200'}, 'מי נכנס עכשיו?'));
+
+      var memberBt = el('div',{class:'space-y-3'});
+      family.members.forEach(function(m){
+        memberBt.append(el('button',{type:'button', class:'w-full tap-target flex items-center justify-between gap-3 p-4 rounded-2xl surface-tight card-hover border-2 border-stone-200 hover:border-orange-200 btn-pop text-right shadow-sm', onClick:function(){
+          setCurrentUserId(m.id);
+          goApp();
+        }},
+          el('div',{class:'min-w-0'},
+            el('div',{class:'font-bold text-lg text-stone-900'}, m.displayName),
+            el('div',{class:'text-sm text-orange-700 font-semibold'}, roleLabel(m.role)),
+          ),
+          el('span',{class:'text-orange-500 font-extrabold text-xl shrink-0'}, '\u2190'),
+        ));
+      });
+      panel.append(memberBt);
+
+      var addRow = el('div',{class:'flex flex-col sm:flex-row gap-3 pt-2 border-t border-stone-200'});
+      var nm = el('input',{type:'text', class:'flex-1 min-w-0 px-4 py-3.5 rounded-2xl bg-stone-50 border-2 border-stone-200 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 text-stone-900', placeholder:'שם להצגה (למשל: אבא, דני)'});
+      var roleSel = el('select',{class:'sm:w-44 px-4 py-3.5 rounded-2xl border-2 border-stone-200 bg-white text-stone-900 font-semibold'},
+        el('option',{value:'parent'}, 'הורה'),
+        el('option',{value:'child'}, 'ילד/ה'),
+        el('option',{value:'other'}, 'אחר'),
+      );
+      addRow.append(nm, roleSel, el('button',{type:'button', class:'tap-target py-3.5 px-5 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white font-bold border-2 border-stone-800 btn-pop shadow-md shrink-0', onClick:function(){
+        var displayName = (nm.value||'').trim();
+        if(!displayName){ alert('נא שם להצגה'); return; }
+        var mem = { id: cid(), displayName: displayName, role: roleSel.value||'parent' };
+        family.members = family.members.concat([mem]);
+        writeFamily(family);
+        nm.value='';
+        render();
+      }}, 'הוסף משתמש'));
+      panel.append(addRow);
+
+      if(switchOnly){
+        panel.append(el('a',{href:'index.html', class:'block text-center text-sm font-bold text-orange-700 hover:text-orange-900 underline decoration-2 underline-offset-2 mt-4 py-2'}, 'ביטול · חזרה ללוח'));
+      }
+
+      wrap.append(panel);
+    }
+
+    root.appendChild(wrap);
+  }catch(err){
+    root.innerHTML = '';
+    var msg = (err && err.message) ? String(err.message) : String(err);
+    root.appendChild(el('div',{class:'surface rounded-[var(--radius-xl)] p-6 border-[3px] border-red-200 bg-red-50/80 text-red-900 text-sm'},
+      el('strong',{class:'font-extrabold'}, 'לא ניתן להציג: '), document.createTextNode(' '+msg)));
+  }
+}
+
+try{ render(); }catch(err){
+  var root2 = document.getElementById('root');
+  if(root2){
+    root2.innerHTML = '';
+    var msg2 = (err && err.message) ? String(err.message) : String(err);
+    root2.appendChild(document.createTextNode('שגיאה: '+msg2));
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+# לוח כוכבים — https://stars-family-board.netlify.app
+# הפרונט סטטי מתיקיית frontend; ה-API הוא שרת Python נפרד (Railway / Render / VPS וכו׳).
+#
+# Netlify: השאירו "Base directory" ריק (שורש הריפו). לא לבחור "frontend" כבסיס —
+# אחרת פקודות עם ../ נשברות. Publish = frontend מוגדר כאן.
+
+[build]
+  publish = "frontend"
+  command = "node netlify/prepare-build.mjs"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# חובה ב-Netlify → Site settings → Environment variables:
+#
+# STARS_BACKEND_URL = https://YOUR-PYTHON-API.example.com
+#   (כתובת מלאה לשרת FastAPI, בלי סלאש בסוף. מפעילה פרוקסי ל־/api ו־/media — מומלץ.)
+#
+# אם לא משתמשים בפרוקסי, הגדירו במקום זאת:
+# STARS_PUBLIC_API_URL = https://YOUR-PYTHON-API.example.com
+# ובשרת Python: STARS_CORS_ALLOW_ORIGINS=https://stars-family-board.netlify.app
+# ו־STARS_COOKIE_SECURE=true
+#
+# דוגמה לקובץ .env בשרת: backend/.env.example
+#
+# Base directory ב-Netlify: ריק. Publish נשלט מכאן (frontend).
+
+# כללים כפולים (גם קבצים ב-login/index.html וכו׳ נוצרים ב-build)
+[[redirects]]
+  from = "/login"
+  to = "/login/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/login/"
+  to = "/login/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/board"
+  to = "/board/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/board/"
+  to = "/board/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/admin/"
+  to = "/admin/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/login.html"
+  status = 200
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

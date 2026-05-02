@@ -1,0 +1,8 @@
+# Friendly URLs — גם לקבצים בתיקיות (login/index.html וכו׳)
+/login /login/index.html 200
+/login/ /login/index.html 200
+/board /board/index.html 200
+/board/ /board/index.html 200
+/admin /admin/index.html 200
+/admin/ /admin/index.html 200
+/ /login.html 200

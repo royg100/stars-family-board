@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>לוח הכוכבים ⭐</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f2eb;
+    --surface:#ffffff;
+    --surface-warm:#fffdf8;
+    --border:#e4ddd0;
+    --border-strong:#cfc4b2;
+    --accent:#ea580c;
+    --accent-hover:#c2410c;
+    --accent-muted:rgba(234,88,12,.14);
+    --text:#292524;
+    --text-muted:#78716c;
+    --muted-bg:#faf7f0;
+    --shadow:0 18px 50px -30px rgba(41,37,36,.35);
+    --shadow-sm:0 8px 24px -18px rgba(41,37,36,.28);
+    --radius-lg:1.375rem;
+    --radius-xl:1.65rem;
+  }
+  *,*::before,*::after{border-color:var(--border)}
+  html,body{height:100%}
+  body{
+    font-family:'Rubik','Segoe UI','Heebo',system-ui,sans-serif;
+    font-weight:500;
+    color:var(--text);
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(circle at 12% 20%,rgba(251,206,232,.65) 0,transparent 42%),
+      radial-gradient(circle at 88% 8%,rgba(186,230,253,.65) 0,transparent 38%),
+      radial-gradient(circle at 72% 88%,rgba(254,249,194,.85) 0,transparent 40%),
+      radial-gradient(#d6d3d15c 1.2px, transparent 1.2px);
+    background-size:auto,auto,auto,28px 28px;
+    min-height:100%;
+    letter-spacing:.01em;
+  }
+  .surface{
+    background:var(--surface);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);
+    border-radius:var(--radius-lg);
+  }
+  .surface-tight{
+    background:var(--surface-warm);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .card-hover{transition:transform .22s cubic-bezier(.2,.8,.25,1), box-shadow .22s ease, border-color .2s ease}
+  .card-hover:hover{
+    transform:translateY(-3px);
+    box-shadow:var(--shadow);
+    border-color:#d4cbc0;
+  }
+  .btn-pop{transition:transform .1s ease, background-color .2s ease, box-shadow .2s ease, color .2s ease}
+  .btn-pop:active{transform:scale(.97)}
+  .ring-leader{
+    outline:4px solid rgba(251,146,60,.6);
+    outline-offset:4px;
+  }
+  @keyframes pop{
+    0%{transform:scale(.94);opacity:0}
+    70%{transform:scale(1.02)}
+    100%{transform:scale(1);opacity:1}
+  }
+  .pop{animation:pop .4s cubic-bezier(.24,.94,.37,1.15)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .shake{animation:shake .28s ease}
+  @keyframes float-up{
+    0%{transform:translate(-50%,6px) scale(.75);opacity:0;color:var(--text)}
+    20%{opacity:1}
+    100%{transform:translate(-50%,-88px) scale(1.25);opacity:0}
+  }
+  .floater{
+    position:fixed;font-weight:800;color:#ea580c;text-shadow:0 1px 0 #fff;
+    pointer-events:none;font-size:1.85rem;line-height:1;animation:float-up .95s ease-out forwards;font-family:inherit;
+    z-index:55;
+  }
+  @keyframes confetti-fall{
+    0%{transform:translateY(-16px) rotate(0)}
+    100%{transform:translateY(110vh) rotate(620deg);opacity:.15}
+  }
+  .confetti{
+    position:fixed;top:-8px;width:11px;height:14px;border-radius:42% 58% 50% 50%;
+    pointer-events:none;z-index:60;
+    opacity:.95;
+    animation:confetti-fall 2.5s ease-in forwards;
+  }
+  .scroll-fade::-webkit-scrollbar{width:7px}
+  .scroll-fade::-webkit-scrollbar-track{background:rgba(120,113,108,.06);border-radius:6px}
+  .scroll-fade::-webkit-scrollbar-thumb{background:rgba(120,113,108,.28);border-radius:6px}
+  .level-bar{
+    border-radius:999px;
+    background:linear-gradient(90deg,#fb923c,#f97316,#fdba74);
+  }
+  .modal-shell{
+    background:var(--surface);
+    border:1px solid var(--border);
+    box-shadow:0 26px 60px -24px rgba(28,25,23,.45),0 0 0 1px rgba(255,255,255,.6);
+  }
+  details>summary{list-style:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+  details>summary::-webkit-details-marker{display:none}
+  input,select,textarea{font-family:inherit}
+  .tap-target{min-height:64px;min-width:56px;touch-action:manipulation}
+  .kid-avatar{
+    border-radius:1.125rem;border:4px solid #fff;
+    box-shadow:0 6px 20px rgba(234,88,12,.22),inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .podium-1{
+    background:linear-gradient(165deg,#ffedd5 0%,#fed7aa 40%,#fdba74 100%);
+    border:2px solid #fb923c;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.6);
+    border-radius:1rem 1rem .25rem .25rem;
+  }
+  .podium-2{
+    background:linear-gradient(165deg,#e7e5e4 0%,#d6d3d1 100%);
+    border:2px solid #a8a29e;border-radius:.75rem .75rem .2rem .2rem;
+  }
+  .podium-3{
+    background:linear-gradient(165deg,#ffe4e6 0%,#fecdd3 100%);
+    border:2px solid #fb7185;border-radius:.75rem .75rem .2rem .2rem;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .grain{position:fixed;inset:0;pointer-events:none;opacity:.04;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+</style>
+</head>
+<body class="antialiased">
+<div class="grain" aria-hidden="true"></div>
+<div id="app" class="max-w-lg sm:max-w-2xl mx-auto px-5 sm:px-6 py-8 sm:py-12 relative z-[1]"></div>
+
+<!-- Modal root -->
+<div id="modal-root"></div>
+
+<script>
+/* ---------- Storage (דפדפן + שרת משותף אם רץ stars_web_server) ---------- */
+const FAMILY_STORE = 'stars-family';
+const USER_STORE = 'stars-current-user';
+function getCurrentUserId(){ return sessionStorage.getItem(USER_STORE)||''; }
+const KEY_BASE = 'stars-app-v2';
+(function stashToken(){
+  const t = new URLSearchParams(location.search).get('token');
+  if(t) sessionStorage.setItem('stars-token', t);
+})();
+function readFamily(){
+  try{
+    const f = JSON.parse(localStorage.getItem(FAMILY_STORE)||'null');
+    if(!f || typeof f !== 'object') return null;
+    if(!Array.isArray(f.members)) f.members = [];
+    return f;
+  }
+  catch{ return null; }
+}
+function sessionReady(){
+  const f = readFamily();
+  const u = getCurrentUserId();
+  if(!f?.id || !Array.isArray(f.members) || f.members.length===0) return false;
+  if(!u || !f.members.some(m=>m.id===u)) return false;
+  return true;
+}
+const __sessionOk = sessionReady();
+if(!__sessionOk) location.replace('login.html'+location.search);
+function appStorageKey(){
+  try{
+    const f = JSON.parse(localStorage.getItem(FAMILY_STORE)||'null');
+    if(f?.id) return KEY_BASE+':'+f.id;
+  }catch{}
+  return KEY_BASE;
+}
+function currentMember(){
+  const f = readFamily();
+  const uid = getCurrentUserId();
+  return f?.members?.find(m=>m.id===uid) || null;
+}
+function roleLabel(r){
+  if(r==='parent') return 'הורה';
+  if(r==='child') return 'ילד/ה';
+  return 'אחר';
+}
+function apiHeaders(withJson=false){
+  const h = {};
+  if(withJson) h['Content-Type'] = 'application/json';
+  const t = sessionStorage.getItem('stars-token');
+  if(t) h['X-Stars-Token'] = t;
+  return h;
+}
+const defaultState = () => ({
+  kids: [],         // {id, name, emoji, color, stars, lifetime, history:[{t,delta,reason}]}
+  prizes: defaultPrizeList(),
+  redemptions: [],  // {id, kidId, prizeName, cost, t}
+});
+function cid(){return Math.random().toString(36).slice(2,10)}
+/** פרסים נוכחיים (מקור לברירת מחדל ולמיגרציה מתבנית ישנה) */
+function defaultPrizeList(){
+  return [
+    {id:cid(), name:'ברד', cost:5},
+    {id:cid(), name:'חבילת כלפים', cost:10},
+    {id:cid(), name:'שייק במנדרא', cost:15},
+  ];
+}
+/** אם השמירה המקומית עדיין מכילה את שלושת הפרסים מהתבנית הישנה (5/10/15 כוכבים) — החלף בפרסים החדשים */
+function migrateLegacyPrizes(state){
+  const p = state.prizes;
+  if(!Array.isArray(p) || p.length<3) return state;
+  const byCost = c => p.find(x=>Number(x.cost)===c);
+  const n5 = String(byCost(5)?.name||'');
+  const n10 = String(byCost(10)?.name||'');
+  const n15 = String(byCost(15)?.name||'');
+  const legacyCore =
+    (/גלידה|🍦/.test(n5)) &&
+    (/סרט\s*בערב|סרט\s*ב|🎬/.test(n10)) &&
+    (/מטלות|🛌/.test(n15));
+  if(!legacyCore) return state;
+  const extras = p.filter(x=>![5,10,15].includes(Number(x.cost)));
+  const onlyOldToy =
+    extras.length===0 ||
+    (extras.length===1 && Number(extras[0].cost)===25 && /צעצוע|חדש|🧸/.test(String(extras[0].name||'')));
+  if(!onlyOldToy) return state;
+  return {...state, prizes: defaultPrizeList()};
+}
+function load(){
+  try{
+    const k = appStorageKey();
+    const s = JSON.parse(localStorage.getItem(k));
+    if(!s) return defaultState();
+    const merged = {...defaultState(), ...s};
+    const m = migrateLegacyPrizes(merged);
+    if(m !== merged) localStorage.setItem(k, JSON.stringify(m));
+    return m;
+  }catch{ return defaultState() }
+}
+let serverSync = false;
+function save(){
+  localStorage.setItem(appStorageKey(), JSON.stringify(state));
+  if(serverSync){
+    fetch('/api/state', { method:'PUT', headers: apiHeaders(true), body: JSON.stringify(state) }).catch(()=>{});
+  }
+}
+
+let state = __sessionOk ? load() : defaultState();
+async function bootstrap(){
+  try{
+    const r = await fetch('/api/state', { headers: apiHeaders(false) });
+    if(!r.ok) throw new Error('no server');
+    serverSync = true;
+    const data = await r.json();
+    const merged = {...defaultState(), ...(data && typeof data==='object' ? data : {})};
+    const migratedMerged = migrateLegacyPrizes(merged);
+    const serverHasKids = Array.isArray(migratedMerged.kids) && migratedMerged.kids.length > 0;
+    const local = load();
+    const localHasKids = local.kids && local.kids.length > 0;
+    if(serverHasKids){
+      state = migratedMerged;
+      if(migratedMerged !== merged && serverSync){
+        await fetch('/api/state', { method:'PUT', headers: apiHeaders(true), body: JSON.stringify(state) }).catch(()=>{});
+      }
+    } else if(localHasKids){
+      const migratedLocal = migrateLegacyPrizes(local);
+      state = migratedLocal;
+      if(migratedLocal !== local) localStorage.setItem(appStorageKey(), JSON.stringify(state));
+      await fetch('/api/state', { method:'PUT', headers: apiHeaders(true), body: JSON.stringify(state) });
+    } else {
+      state = migratedMerged;
+    }
+    localStorage.setItem(appStorageKey(), JSON.stringify(state));
+  }catch{
+    state = load();
+    serverSync = false;
+  }
+  render();
+}
+
+/* ---------- Helpers ---------- */
+const EMOJIS = ['🦁','🐼','🦊','🐯','🐸','🐵','🦄','🐶','🐱','🐰','🐧','🐨','🐹','🐢','🦋','🐙'];
+const COLORS = [
+  'from-rose-500 to-pink-600',
+  'from-amber-500 to-orange-600',
+  'from-emerald-500 to-teal-600',
+  'from-sky-500 to-blue-600',
+  'from-violet-500 to-fuchsia-600',
+  'from-lime-500 to-green-600',
+  'from-cyan-500 to-sky-600',
+  'from-fuchsia-500 to-pink-600',
+];
+const pick = a => a[Math.floor(Math.random()*a.length)];
+
+const COLOR_TO_BORDER = {
+  'from-rose-500 to-pink-600': 'border-rose-300',
+  'from-amber-500 to-orange-600': 'border-amber-300',
+  'from-emerald-500 to-teal-600': 'border-emerald-300',
+  'from-sky-500 to-blue-600': 'border-sky-300',
+  'from-violet-500 to-fuchsia-600': 'border-violet-300',
+  'from-lime-500 to-green-600': 'border-lime-300',
+  'from-cyan-500 to-sky-600': 'border-cyan-300',
+  'from-fuchsia-500 to-pink-600': 'border-fuchsia-300',
+};
+function kidAccentBorder(k){ return COLOR_TO_BORDER[k.color] || 'border-stone-300'; }
+
+const ICO = {
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>',
+  gift: '<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+  scroll: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  pencil: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  refresh: '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+  sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>',
+};
+function icon(paths, cls='w-5 h-5'){
+  return el('span',{class:'inline-flex items-center justify-center shrink-0 text-stone-500', html:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${paths}</svg>`});
+}
+
+function $(sel,root=document){return root.querySelector(sel)}
+function el(tag, props={}, ...children){
+  const e = document.createElement(tag);
+  for(const k in props){
+    if(k==='class') e.className = props[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), props[k]);
+    else if(k==='html') e.innerHTML = props[k];
+    else e.setAttribute(k, props[k]);
+  }
+  for(const c of children){
+    if(c==null) continue;
+    e.append(c.nodeType ? c : document.createTextNode(c));
+  }
+  return e;
+}
+
+/* ---------- Effects ---------- */
+function burstFloat(target, text){
+  const r = target.getBoundingClientRect();
+  const f = el('div',{class:'floater'},text);
+  f.style.position='fixed';
+  f.style.left=(r.left+r.width/2)+'px';
+  f.style.top=(r.top+8)+'px';
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),1000);
+}
+function confetti(){
+  const colors = ['#fb923c','#f472b6','#67e8f9','#a3e635','#fde047','#c4b5fd'];
+  for(let i=0;i<32;i++){
+    const c = el('div',{class:'confetti'});
+    c.style.left = (Math.random()*100)+'vw';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay = (Math.random()*0.4)+'s';
+    c.style.animationDuration = (1.8+Math.random()*1.4)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3500);
+  }
+}
+function beep(freq=660, dur=0.08, type='sine', vol=0.05){
+  try{
+    const A = beep.ctx ||= new (window.AudioContext||window.webkitAudioContext)();
+    const o=A.createOscillator(),g=A.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.value=vol;
+    o.connect(g).connect(A.destination);
+    o.start(); o.stop(A.currentTime+dur);
+  }catch{}
+}
+
+/* ---------- Modal ---------- */
+function modal(content){
+  return new Promise(resolve=>{
+    const root = $('#modal-root');
+    const back = el('div',{class:'fixed inset-0 bg-stone-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4', onClick:e=>{ if(e.target===back){ close(null) } }});
+    const box = el('div',{class:'modal-shell rounded-[var(--radius-xl)] p-6 sm:p-8 w-full max-w-md pop'});
+    back.appendChild(box);
+    root.appendChild(back);
+    function close(v){ back.remove(); resolve(v) }
+    content(box, close);
+  });
+}
+function confirm(title, msg, danger=false){
+  return modal((box,close)=>{
+    box.append(
+      el('h3',{class:'text-xl font-bold mb-2 text-stone-900'},title),
+      el('p',{class:'text-stone-600 mb-6 leading-relaxed'},msg),
+      el('div',{class:'flex gap-3'},
+        el('button',{class:'flex-1 py-3 rounded-2xl font-bold btn-pop bg-stone-100 hover:bg-stone-200 border-2 border-stone-200 text-stone-700', onClick:()=>close(false)},'ביטול'),
+        el('button',{class:`flex-1 py-3 rounded-2xl font-bold btn-pop border-2 ${danger?'border-rose-300 bg-rose-100 text-rose-900 hover:bg-rose-200':'border-teal-300 bg-teal-100 text-teal-900 hover:bg-teal-200'}`, onClick:()=>close(true)},'אישור'),
+      ),
+    );
+  });
+}
+function prompt(title, fields){
+  return modal((box,close)=>{
+    const inputs = {};
+    box.append(el('h3',{class:'text-xl font-bold mb-5 text-stone-900'},title));
+    for(const f of fields){
+      const wrap = el('div',{class:'mb-4'});
+        wrap.append(el('label',{class:'block text-sm font-semibold text-stone-600 mb-1.5'},f.label));
+      let inp;
+      if(f.type==='emoji'){
+        const grid = el('div',{class:'grid grid-cols-8 gap-2'});
+        let chosen = f.value || EMOJIS[0];
+        EMOJIS.forEach(e=>{
+          const b = el('button',{class:`tap-target min-h-0 min-w-0 h-12 text-2xl rounded-2xl border-2 transition-all ${e===chosen?'border-orange-400 bg-orange-50 shadow-inner':'border-stone-200 bg-stone-50 hover:bg-white hover:border-stone-300'}`, onClick:()=>{
+            chosen=e;
+            grid.querySelectorAll('button').forEach(x=>{
+              x.className='tap-target min-h-0 min-w-0 h-12 text-2xl rounded-2xl border-2 border-stone-200 bg-stone-50 hover:bg-white hover:border-stone-300';
+            });
+            b.className='tap-target min-h-0 min-w-0 h-12 text-2xl rounded-2xl border-2 border-orange-400 bg-orange-50 shadow-inner';
+          }},e);
+          grid.append(b);
+        });
+        wrap.append(grid);
+        inputs[f.name] = ()=>chosen;
+      } else {
+        inp = el('input',{type:f.type||'text', class:'w-full px-4 py-3.5 rounded-2xl bg-stone-50 border-2 border-stone-200 outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 text-lg text-stone-900 placeholder:text-stone-400', placeholder:f.placeholder||''});
+        if(f.value!=null) inp.value = f.value;
+        wrap.append(inp);
+        inputs[f.name] = ()=>inp.value;
+      }
+      box.append(wrap);
+    }
+    box.append(el('div',{class:'flex gap-3 mt-2'},
+      el('button',{class:'flex-1 py-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-200 font-bold btn-pop text-stone-700', onClick:()=>close(null)},'ביטול'),
+      el('button',{class:'flex-1 py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white border-2 border-orange-600 font-bold shadow-md btn-pop', onClick:()=>{
+        const out={}; for(const k in inputs) out[k]=inputs[k]();
+        close(out);
+      }},'שמור'),
+    ));
+    setTimeout(()=>{const i=box.querySelector('input'); i&&i.focus()},50);
+  });
+}
+
+/* ---------- Actions ---------- */
+async function addKid(){
+  const r = await prompt('הוספת ילד/ה', [
+    {name:'name', label:'שם', placeholder:'איך קוראים לו/לה?'},
+    {name:'emoji', label:'בחרו אווטאר', type:'emoji'},
+  ]);
+  if(!r || !r.name.trim()) return;
+  state.kids.push({
+    id:cid(), name:r.name.trim(), emoji:r.emoji, color:pick(COLORS),
+    stars:0, lifetime:0, history:[],
+  });
+  save(); render();
+}
+async function editKid(k){
+  const r = await prompt('עריכת ילד/ה', [
+    {name:'name', label:'שם', value:k.name},
+    {name:'emoji', label:'אווטאר', type:'emoji', value:k.emoji},
+  ]);
+  if(!r || !r.name.trim()) return;
+  k.name = r.name.trim(); k.emoji = r.emoji;
+  save(); render();
+}
+async function removeKid(k){
+  if(await confirm('מחיקה', `למחוק את ${k.name}? כל ההיסטוריה תאבד.`, true)){
+    state.kids = state.kids.filter(x=>x.id!==k.id);
+    save(); render();
+  }
+}
+function changeStars(k, delta, reason='', target=null){
+  const before = k.stars;
+  k.stars = Math.max(0, k.stars + delta);
+  const real = k.stars - before;
+  if(real>0) k.lifetime += real;
+  if(real!==0){
+    k.history.unshift({t:Date.now(), delta:real, reason});
+    k.history = k.history.slice(0,50);
+  }
+  save();
+  if(target){
+    burstFloat(target, real>0?`+${real} ⭐`:`${real} ⭐`);
+  }
+  if(delta>0){ beep(880,0.08,'triangle',0.06); beep(1320,0.08,'triangle',0.04); }
+  else { beep(220,0.12,'sawtooth',0.04) }
+  render();
+}
+async function resetWeek(){
+  if(state.kids.length===0) return;
+  if(await confirm('איפוס שבוע', 'לאפס את כל הכוכבים ל-0? (ההישגים הכוללים יישמרו)', true)){
+    state.kids.forEach(k=>{ k.stars=0; k.history.unshift({t:Date.now(), delta:0, reason:'איפוס שבועי'}) });
+    save(); render();
+    beep(523,0.1); setTimeout(()=>beep(659,0.1),100); setTimeout(()=>beep(784,0.15),200);
+  }
+}
+async function addPrize(){
+  const r = await prompt('הוספת פרס', [
+    {name:'name', label:'שם הפרס (אפשר עם אימוג׳י)', placeholder:'מסיבת פיג׳מות 🎉'},
+    {name:'cost', label:'מחיר בכוכבים', type:'number', placeholder:'10'},
+  ]);
+  if(!r || !r.name.trim() || !r.cost) return;
+  state.prizes.push({id:cid(), name:r.name.trim(), cost:Math.max(1,parseInt(r.cost)||1)});
+  save(); render();
+}
+async function removePrize(p){
+  if(await confirm('מחיקת פרס', `למחוק את "${p.name}"?`, true)){
+    state.prizes = state.prizes.filter(x=>x.id!==p.id);
+    save(); render();
+  }
+}
+async function redeem(p){
+  const eligible = state.kids.filter(k=>k.stars>=p.cost);
+  if(eligible.length===0){
+    return modal((box,close)=>{
+      box.append(
+        el('h3',{class:'text-xl font-bold mb-2 text-stone-900'},'אין מספיק כוכבים'),
+        el('p',{class:'text-stone-600 mb-6 leading-relaxed'},`אף ילד לא צבר ${p.cost} כוכבים עדיין.`),
+        el('button',{class:'w-full py-3 rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-200 font-bold btn-pop text-stone-800', onClick:()=>close(null)},'סגור'),
+      );
+    });
+  }
+  await modal((box,close)=>{
+    box.append(
+      el('h3',{class:'text-xl font-bold mb-2 text-stone-900'},`מימוש: ${p.name}`),
+      el('p',{class:'text-stone-600 mb-4'},`עלות: ${p.cost} כוכבים — בחרו את הילד/ה:`),
+    );
+    const list = el('div',{class:'space-y-2 max-h-72 overflow-auto scroll-fade'});
+    eligible.forEach(k=>{
+      list.append(el('button',{class:'w-full flex items-center gap-3 p-3 rounded-2xl bg-stone-50 hover:bg-white border-2 border-stone-200 btn-pop text-right', onClick:()=>{
+        k.stars -= p.cost;
+        k.history.unshift({t:Date.now(), delta:-p.cost, reason:`פרס: ${p.name}`});
+        state.redemptions.unshift({id:cid(), kidId:k.id, prizeName:p.name, cost:p.cost, t:Date.now()});
+        save(); confetti(); beep(880,0.1); setTimeout(()=>beep(1320,0.15),100);
+        close(true); render();
+      }},
+        el('div',{class:`w-12 h-12 rounded-xl kid-avatar bg-gradient-to-br ${k.color} flex items-center justify-center text-2xl`}, k.emoji),
+        el('div',{class:'flex-1'},
+          el('div',{class:'font-bold text-lg text-stone-900'}, k.name),
+          el('div',{class:'text-orange-600 text-sm font-bold'}, `${k.stars} ⟶ ${k.stars - p.cost}`),
+        ),
+        icon(ICO.gift,'w-6 h-6 text-orange-600'),
+      ));
+    });
+    box.append(list, el('button',{class:'mt-4 w-full py-3 rounded-2xl bg-stone-100 hover:bg-stone-200 border-2 border-stone-200 font-bold btn-pop text-stone-800', onClick:()=>close(null)},'ביטול'));
+  });
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = el('a',{href:URL.createObjectURL(blob), download:`stars-${new Date().toISOString().slice(0,10)}.json`});
+  a.click();
+}
+function importData(){
+  const inp = el('input',{type:'file', accept:'application/json'});
+  inp.onchange = async ()=>{
+    const f = inp.files[0]; if(!f) return;
+    try{
+      const data = JSON.parse(await f.text());
+      if(!data.kids) throw 0;
+      state = {...defaultState(), ...data};
+      save(); render();
+    }catch{ alert('קובץ לא תקין') }
+  };
+  inp.click();
+}
+
+/* ---------- Views ---------- */
+function viewHeader(){
+  const total = state.kids.reduce((s,k)=>s+k.stars,0);
+  const starHead = icon(ICO.star, 'w-7 h-7 sm:w-10 sm:h-10 text-orange-500');
+  const fam = readFamily();
+  const mem = currentMember();
+  const who = fam && mem ? `${fam.name} · ${mem.displayName} (${roleLabel(mem.role)})` : '';
+  return el('header',{class:'flex items-start justify-between gap-4 mb-8 sm:mb-10'},
+    el('div',{class:'min-w-0'},
+      el('h1',{class:'text-4xl sm:text-5xl font-extrabold tracking-tight text-stone-900 flex items-center gap-2 sm:gap-3 leading-none'},
+        starHead,
+        el('span',{class:'bg-gradient-to-l from-orange-600 to-orange-500 bg-clip-text text-transparent'},'לוח הכוכבים'),
+      ),
+      who ? el('p',{class:'mt-2 text-sm font-semibold text-stone-600'}, who) : null,
+      el('div',{class:'mt-4 flex flex-wrap gap-2 items-center'}, 
+        el('span',{class:'inline-flex px-3 py-1 rounded-full bg-white border-2 border-stone-200 text-stone-700 text-sm font-bold shadow-sm'}, `${total} כוכבים השבוע`),
+        el('span',{class:'inline-flex px-3 py-1 rounded-full bg-orange-50 border-2 border-orange-200 text-orange-900 text-sm font-bold'},`${state.kids.length} ילדים`),
+      ),
+    ),
+    el('div',{class:'flex flex-col gap-2 shrink-0 items-stretch sm:items-end'}, 
+      el('a',{href:'login.html?switch=1', class:'text-center text-xs sm:text-sm font-bold text-orange-700 hover:text-orange-900 underline decoration-2 underline-offset-2 py-1'}, 'החלפת משתמש'),
+      el('div',{class:'flex gap-2'},
+        el('button',{class:'tap-target px-4 rounded-2xl surface-tight card-hover btn-pop flex items-center justify-center border border-stone-300', title:'ייצוא', onClick:exportData}, icon(ICO.download,'w-5 h-5 text-stone-600')),
+        el('button',{class:'tap-target px-4 rounded-2xl surface-tight card-hover btn-pop flex items-center justify-center border border-stone-300', title:'ייבוא', onClick:importData}, icon(ICO.upload,'w-5 h-5 text-stone-600')),
+      ),
+    ),
+  );
+}
+
+function viewPodium(){
+  const sorted = [...state.kids].sort((a,b)=>b.stars-a.stars).slice(0,3);
+  if(sorted.length<2 || sorted[0].stars===0) return null;
+  const order = [1,0,2]; // place 2nd, 1st, 3rd visually
+  const podium = el('div',{class:'surface card-hover rounded-[var(--radius-xl)] p-5 sm:p-6 mb-8 border-[3px] border-orange-100'},
+    el('div',{class:'flex items-center gap-2 mb-4'},
+      icon(ICO.trophy,'w-6 h-6 sm:w-8 sm:h-8 text-orange-600'),
+      el('h2',{class:'text-xl sm:text-2xl font-extrabold text-stone-900'},'השבוע בשלושת המקומות הראשונים'),
+    ),
+    el('div',{class:'grid grid-cols-3 gap-2 sm:gap-4 items-end'},
+      ...order.map(i=>{
+        const k = sorted[i]; if(!k) return el('div');
+        const heights = ['h-28 sm:h-36','h-20 sm:h-28','h-14 sm:h-22'];
+        const cls = ['podium-1','podium-2','podium-3'][i];
+        const placeLabel = ['I','II','III'][i];
+        return el('div',{class:'flex flex-col items-center gap-2'},
+          el('div',{class:`w-14 h-14 sm:w-[4.75rem] sm:h-[4.75rem] kid-avatar bg-gradient-to-br ${k.color} flex items-center justify-center text-[1.85rem] sm:text-[2.35rem] ${i===0?'ring-leader':''}`}, k.emoji),
+          el('div',{class:'text-center'},
+            el('div',{class:'font-bold truncate max-w-[5.75rem] sm:max-w-[8rem] text-stone-900'}, k.name),
+            el('div',{class:'text-orange-700 font-extrabold text-lg'}, `${k.stars} ⭐`),
+          ),
+          el('div',{class:`${heights[i]} w-full ${cls} flex items-start justify-center pt-3 text-xl sm:text-2xl font-extrabold text-stone-800`}, placeLabel),
+        );
+      })
+    ),
+  );
+  return podium;
+}
+
+function viewKid(k, isLeader=false){
+  const card = el('div',{class:`surface card-hover p-5 sm:p-6 relative overflow-hidden border-[3px] ${kidAccentBorder(k)} shadow-md ${isLeader?'ring-leader rounded-[calc(var(--radius-xl)+6px)]':''}`});
+
+  const editBtn = el('button',{class:'p-2 rounded-xl hover:bg-orange-50 border-2 border-transparent hover:border-orange-200 btn-pop', title:'עריכה', onClick:()=>editKid(k)}, icon(ICO.pencil,'w-[18px] h-[18px] text-stone-500'));
+  const delBtn = el('button',{class:'p-2 rounded-xl hover:bg-rose-50 border-2 border-transparent hover:border-rose-200 btn-pop mr-auto', title:'מחיקה', onClick:()=>removeKid(k)}, icon(ICO.trash,'w-[18px] h-[18px] text-stone-500'));
+
+  const top = el('div',{class:'flex items-center gap-4 sm:gap-5 relative'},
+    el('div',{class:`w-[4.75rem] h-[4.75rem] sm:w-[5.5rem] sm:h-[5.5rem] kid-avatar shrink-0 bg-gradient-to-br ${k.color} flex items-center justify-center text-[2.85rem] sm:text-[3.25rem]`}, k.emoji),
+    el('div',{class:'flex-1 min-w-0'},
+      el('div',{class:'flex items-center gap-1 flex-wrap'},
+        el('h3',{class:'text-2xl sm:text-[1.65rem] font-extrabold truncate text-stone-900'}, k.name),
+        editBtn,
+        delBtn,
+      ),
+      el('div',{class:'flex items-baseline gap-2 mt-2 flex-wrap'},
+        el('span',{class:'text-[2.6rem] sm:text-5xl font-black leading-none bg-gradient-to-l from-orange-600 to-orange-500 bg-clip-text text-transparent'},`${k.stars}`),
+        el('span',{class:'text-stone-500 font-bold text-sm'},'כוכבים'),
+        el('span',{class:'text-stone-400 text-xs sm:text-sm font-medium'},`· מאז ומתמיד ${k.lifetime}`),
+      ),
+      (()=>{
+        const milestones = [5,10,20,40,75,120];
+        const next = milestones.find(m=>m>k.stars) || (k.stars+10);
+        const prev = [...milestones].reverse().find(m=>m<=k.stars) || 0;
+        const pct = Math.min(100, Math.round(((k.stars-prev)/(next-prev))*100));
+        return el('div',{class:'mt-3'},
+          el('div',{class:'h-3 rounded-full bg-stone-200 overflow-hidden'},
+            el('div',{class:'h-full level-bar transition-all duration-500', style:`width:${pct}%`}),
+          ),
+          el('div',{class:'text-xs text-stone-500 mt-1.5 font-medium'},`עוד ${next - k.stars} לאבן דרך ${next} ★`),
+        );
+      })(),
+    ),
+  );
+
+  const minus = el('button',{class:'tap-target flex-1 py-4 rounded-2xl border-[3px] border-rose-200 bg-gradient-to-br from-rose-50 to-rose-100 text-rose-800 text-[2.05rem] font-black btn-pop disabled:opacity-35 disabled:saturate-50 disabled:pointer-events-none', disabled: k.stars<=0?'true':null, onClick:e=>{
+    if(k.stars<=0){ card.classList.add('shake'); setTimeout(()=>card.classList.remove('shake'),300); return }
+    changeStars(k,-1,'',e.currentTarget);
+  }},'−');
+  const plus = el('button',{class:'tap-target flex-1 py-4 rounded-2xl border-[3px] border-teal-200 bg-gradient-to-br from-teal-50 via-emerald-50 to-teal-100 text-teal-900 text-[2.05rem] font-black btn-pop shadow-sm', onClick:e=>{
+    changeStars(k,+1,'',e.currentTarget);
+  }},'+');
+
+  const buttons = el('div',{class:'flex gap-3 sm:gap-3 mt-5 relative'}, minus, plus);
+
+  const hist = el('details',{class:'mt-4 relative'}, 
+    el('summary',{class:'text-xs text-stone-500 hover:text-orange-700 font-bold select-none cursor-pointer py-2'},'היסטוריה אחרונה ▾'),
+    el('div',{class:'mt-1 max-h-36 overflow-auto scroll-fade text-sm space-y-1.5'}, 
+      ...(k.history.length? k.history.slice(0,12).map(h=>{
+        const d = new Date(h.t);
+        const txt = h.delta>0?`+${h.delta}`:(h.delta<0?`${h.delta}`:'איפוס');
+        const cls = h.delta>0?'text-teal-800 font-semibold':(h.delta<0?'text-rose-700 font-semibold':'text-stone-500');
+        return el('div',{class:'flex justify-between rounded-xl px-3 py-2 bg-stone-50 border border-stone-200'},
+          el('span',{class:cls},`${txt}${h.delta!==0?' כוכב':''}${h.reason?` · ${h.reason}`:''}`),
+          el('span',{class:'text-stone-400 text-[11px] shrink-0 me-2 font-medium'}, d.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})),
+        );
+      }) : [el('div',{class:'text-stone-500 py-2'},'אין עדיין פעולות')] ),
+    ),
+  );
+
+  card.append(top, buttons, hist);
+  return card;
+}
+
+function viewKidsList(){
+  if(state.kids.length===0){
+    return el('div',{class:'surface rounded-[var(--radius-xl)] p-10 sm:p-14 text-center border-[3px] border-dashed border-orange-300 bg-gradient-to-bl from-orange-50/70 to-white'},
+      el('div',{class:'flex justify-center mb-5'}, icon(ICO.sparkles,'w-[4.25rem] h-[4.25rem] text-orange-500')),
+      el('h2',{class:'text-2xl font-extrabold mb-3 text-stone-900'},'בואו נתחיל!'),
+      el('p',{class:'text-stone-600 mb-8 max-w-sm mx-auto text-lg leading-relaxed'},'הוסיפו ילד ראשון ללוח והתחילו לספור כוכבים בסטיקרים ובצבע'),
+      el('button',{class:'px-10 py-4 rounded-[2rem] bg-orange-500 hover:bg-orange-600 text-white font-extrabold btn-pop shadow-lg border-b-4 border-orange-700 active:border-b-0 active:translate-y-1 transition-all inline-flex items-center gap-2', onClick:addKid}, icon(ICO.plus,'w-6 h-6 text-white'), 'הוסף ילד/ה'),
+    );
+  }
+  const sorted = [...state.kids].sort((a,b)=>b.stars-a.stars || a.name.localeCompare(b.name,'he'));
+  const leaderId = sorted[0]?.stars > 0 ? sorted[0].id : null;
+  return el('div',{class:'space-y-4 sm:space-y-5'}, ...sorted.map(k=>viewKid(k, leaderId!==null && k.id===leaderId)));
+}
+
+function viewPrizes(){
+  const wrap = el('section',{class:'mt-11'});
+  const titleRow = el('div',{class:'flex items-center gap-2 min-w-0'}, 
+    icon(ICO.gift,'w-7 h-8 text-orange-600'),
+    el('h2',{class:'text-2xl sm:text-[1.7rem] font-extrabold text-stone-900 flex-1'},'פרסים'),
+  );
+  wrap.append(el('div',{class:'flex items-center justify-between gap-4 mb-4'},
+    titleRow,
+    el('button',{class:'px-4 py-2.5 rounded-2xl bg-white hover:bg-orange-50 border-2 border-stone-300 text-sm font-bold btn-pop flex items-center gap-2 text-stone-800 shrink-0', onClick:addPrize}, icon(ICO.plus,'w-4 h-4 text-orange-600'), 'פרס חדש'),
+  ));
+  if(state.prizes.length===0){
+    wrap.append(el('div',{class:'surface rounded-[var(--radius-lg)] p-8 text-center text-stone-600 font-medium border-[3px] border-stone-200'}, 'טרם הוגדרו פרסים.'));
+    return wrap;
+  }
+  const grid = el('div',{class:'grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4'});
+  state.prizes.forEach(p=>{
+    const max = state.kids.reduce((m,k)=>Math.max(m,k.stars),0);
+    const can = max>=p.cost;
+    grid.append(el('div',{class:`surface card-hover p-5 flex flex-col items-stretch border-[3px] ${can?'border-orange-100 bg-orange-50/35':'border-stone-200 opacity-95'}`},
+      el('div',{class:'flex items-start justify-between gap-1'},
+        el('div',{class:'text-[1rem] sm:text-lg font-bold pr-1 flex-1 text-stone-900 leading-snug'}, p.name),
+        el('button',{class:'p-1.5 rounded-xl hover:bg-rose-100 btn-pop shrink-0', onClick:()=>removePrize(p)}, icon(ICO.trash,'w-4 h-4 text-stone-400')),
+      ),
+      el('div',{class:'text-orange-600 font-black text-xl sm:text-2xl mt-4'}, `${p.cost} ⭐`),
+      el('button',{class:`mt-4 py-3 rounded-xl font-extrabold btn-pop border-2 ${can?'bg-orange-500 border-orange-600 text-white shadow-md hover:bg-orange-600':'border-stone-200 bg-white text-stone-400 cursor-not-allowed grayscale'}`, onClick:()=>redeem(p)}, can?'מימוש':'נעול'),
+    ));
+  });
+  wrap.append(grid);
+  return wrap;
+}
+
+function viewRedemptions(){
+  if(state.redemptions.length===0) return null;
+  const list = el('details',{class:'mt-10 surface rounded-[var(--radius-lg)] p-5 border-2 border-stone-200 bg-white'}, 
+    el('summary',{class:'font-bold flex items-center gap-2 text-stone-900 cursor-pointer text-lg'},
+      icon(ICO.scroll,'w-5 h-5 text-orange-500'),
+      el('span',{class:'flex-1'},`מומש מהחנות (${state.redemptions.length})`),
+      el('span',{class:'text-stone-400 text-sm font-semibold'},'פתח ▾'),
+    ),
+    el('div',{class:'mt-4 space-y-2 max-h-56 overflow-auto scroll-fade'}, 
+      ...state.redemptions.map(r=>{
+        const k = state.kids.find(x=>x.id===r.kidId);
+        const d = new Date(r.t);
+        return el('div',{class:'flex justify-between gap-2 text-sm rounded-2xl px-4 py-3 bg-stone-50 border border-stone-200'},
+          el('span',{class:'text-stone-800 font-semibold'}, `${k?k.emoji+' '+k.name:'(נמחק)'} · ${r.prizeName}`),
+          el('span',{class:'text-stone-500 shrink-0 text-xs font-medium'}, `−${r.cost} ★ · ${d.toLocaleString('he-IL',{day:'2-digit',month:'2-digit'})}`),
+        );
+      })
+    ),
+  );
+  return list;
+}
+
+function viewActions(){
+  return el('div',{class:'sticky bottom-4 mt-10 z-30'},
+    el('div',{class:'rounded-[2rem] bg-white shadow-[0_22px_50px_-20px_rgba(41,37,36,.65)] border-[3px] border-stone-200 p-2.5 flex gap-3'},
+      el('button',{class:'flex-1 tap-target rounded-[1.35rem] bg-orange-500 hover:bg-orange-600 text-white font-extrabold btn-pop flex items-center justify-center gap-2 border-b-4 border-orange-700 active:border-b-0 py-4', onClick:addKid}, icon(ICO.plus,'w-6 h-6 text-white'), 'הוסף ילד/ה'),
+      el('button',{class:'flex-1 tap-target rounded-[1.35rem] bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 font-bold btn-pop text-stone-900 flex items-center justify-center gap-2 py-4', onClick:resetWeek}, icon(ICO.refresh,'w-5 h-5 text-orange-600'), 'איפוס שבוע'),
+    ),
+  );
+}
+
+/* ---------- Render ---------- */
+function render(){
+  const root = $('#app');
+  root.innerHTML='';
+  root.append(viewHeader());
+  const podium = viewPodium(); if(podium) root.append(podium);
+  root.append(viewKidsList());
+  root.append(viewPrizes());
+  const red = viewRedemptions(); if(red) root.append(red);
+  root.append(viewActions());
+}
+if(__sessionOk) bootstrap();
+
+// keyboard shortcut: 'n' new kid
+if(__sessionOk) window.addEventListener('keydown', e=>{
+  if(e.key==='n' && !e.target.matches('input,textarea')) addKid();
+});
+</script>
+</body>
+</html>

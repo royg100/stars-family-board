@@ -1,0 +1,18 @@
+[build]
+  command = "npm install"
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/login.html"
+  status = 302
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/state"
+  to = "/.netlify/functions/stars-state"
+  status = 200
+  force = true

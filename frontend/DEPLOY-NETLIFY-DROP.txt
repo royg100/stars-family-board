@@ -1,0 +1,23 @@
+================================================================================
+Netlify Drop (גרירת תיקייה) — למה /login נותן 404
+================================================================================
+ב-Drop אין build אוטומטי: לא קוראים netlify.toml ולא מריצים prepare-build.mjs.
+רק מה שאתה מעלה ב-zip מגיע לאתר.
+
+לפני zip — במחשב, מתוך תיקיית הפרויקט (Stars):
+  node netlify/prepare-build.mjs
+
+אחר כך דחוס ל-zip את *כל* התוכן של תיקיית frontend/, כולל:
+  _redirects
+  login/index.html   board/index.html   admin/index.html
+  login.html  index.html  admin.html
+  static/  (כל התיקייה)
+
+העלה את ה-zip ב-Drop והחלף את האתר.
+
+פתרון מומלץ: ב-Netlify → Link site to Git + Build: node netlify/prepare-build.mjs
+  + Publish directory = frontend + Base directory ריק (לא "frontend").
+
+גישה ישירה בלי /login (אם login.html עלה):
+  https://stars-family-board.netlify.app/login.html
+================================================================================

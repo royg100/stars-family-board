@@ -1,0 +1,2 @@
+cd "C:\Users\roige\OneDrive\Desktop\SharedFolder\Stars"
+.\deploy-netlify.ps1
