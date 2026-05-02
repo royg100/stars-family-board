@@ -1,0 +1,14 @@
+.git
+.gitignore
+frontend
+legacy/node_modules
+legacy/.netlify
+.netlify
+**/__pycache__
+**/*.pyc
+*.db
+.env
+backend/.env
+backend/uploads
+README.md
+*.md
